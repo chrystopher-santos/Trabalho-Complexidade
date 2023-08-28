@@ -12,12 +12,16 @@ def load_automaton(project):
 
     return initial_state, alphabet, states, final_state, transitions
 
-def epsilon_closure(automaton, states):
-    epsilon_closure_set = set(states)  # Inicia com os estados fornecidos
-    stack = list(states)  # Inicia a pilha com os estados fornecidos
+# Função para calcular o epsilon-fechamento de um conjunto de estados
+def epsilon_closure(automaton, start_states):
+    epsilon_closure_set = set()  # Conjunto que armazena os estados alcançados
+    stack = list(start_states)    # Pilha para processar estados
 
+    # Enquanto houver estados na pilha
     while stack:
         current_state = stack.pop()
+        
+        # Para cada estado alcançável por ε-transições a partir do estado atual
         for epsilon_state in automaton[4].get(current_state, {}).get('&', set()):
             if epsilon_state not in epsilon_closure_set:
                 epsilon_closure_set.add(epsilon_state)
@@ -25,24 +29,28 @@ def epsilon_closure(automaton, states):
 
     return epsilon_closure_set
 
+# Função para verificar se uma palavra é aceita pelo autômato
 def is_accepted(automaton, word):
-    current_states = epsilon_closure(automaton, {automaton[0]})
+    current_states = epsilon_closure(automaton, {automaton[0]})  # Inicializa com o epsilon-fechamento do estado inicial
     
+    # Para cada símbolo na palavra
     for symbol in word:
         next_states = set().union(*[automaton[4].get(state, {}).get(symbol, set()) for state in current_states])
         current_states = epsilon_closure(automaton, next_states)
 
-    final_states_set = set(automaton[3])
-    return bool(current_states & final_states_set)
+    final_states_set = set(automaton[3])  # Conjunto de estados finais do autômato
+    return bool(current_states & final_states_set)  # Verifica se há interseção entre estados atuais e finais
 
+# Função principal
 def main():
-    automaton = load_automaton("automato.txt")
-
-    word = input("Digite uma palavra: ")
+    automaton = load_automaton("automato.txt")  # Carrega o autômato de um arquivo
+    
+    word = input("Digite uma palavra: ")  # Solicita uma palavra ao usuário
     if is_accepted(automaton, word):
-        print("Aceita!")
+        print("Aceita!")  # A palavra é aceita pelo autômato
     else:
-        print("Rejeitada!")
+        print("Rejeitada!")  # A palavra é rejeitada pelo autômato
 
+# Executa a função main() quando o script é executado diretamente
 if __name__ == "__main__":
     main()
